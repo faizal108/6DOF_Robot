@@ -1,4 +1,4 @@
-void checkBtn() {
+void checkButtons() {
   boolean j1_upstate = digitalRead(j1_up);
   boolean j1_downstate = digitalRead(j1_down);
   boolean j2_upstate = digitalRead(j2_up);
@@ -17,8 +17,8 @@ void checkBtn() {
     while (j1_upstate == HIGH) {
       digitalWrite(PUL1_PIN, HIGH);
       digitalWrite(PUL1_PIN, LOW);
-      delay(10);
-      curPos1 = curPos1 + dl1*3;
+      delay(5);
+      curPos1 = curPos1 + dl1;
       prevFlag = 1;
       j1_upstate = digitalRead(j1_up);
       Serial.println(curPos1);
@@ -30,8 +30,8 @@ void checkBtn() {
     while (j1_downstate == HIGH) {
       digitalWrite(PUL1_PIN, HIGH);
       digitalWrite(PUL1_PIN, LOW);
-      delay(10);
-      curPos1 = curPos1 - dl1*3;
+      delay(5);
+      curPos1 = curPos1 - dl1;
       prevFlag = 1;
       j1_downstate = digitalRead(j1_down);
       Serial.println(curPos1);
@@ -44,7 +44,7 @@ void checkBtn() {
     while (j2_upstate == HIGH) {
       digitalWrite(PUL2_PIN, HIGH);
       digitalWrite(PUL2_PIN, LOW);
-      delay(10);
+      delay(5);
       curPos2 = curPos2 + dl2;
       prevFlag = 1;
       j2_upstate = digitalRead(j2_up);
@@ -57,7 +57,7 @@ void checkBtn() {
     while (j2_downstate == HIGH) {
       digitalWrite(PUL2_PIN, HIGH);
       digitalWrite(PUL2_PIN, LOW);
-      delay(10);
+      delay(5);
       curPos2 = curPos2 - dl2;
       prevFlag = 1;
       j2_downstate = digitalRead(j2_down);
@@ -71,10 +71,11 @@ void checkBtn() {
     while (j3_upstate == HIGH) {
       digitalWrite(PUL3_PIN, HIGH);
       digitalWrite(PUL3_PIN, LOW);
-      delay(10);
+      delay(5);
       curPos3 = curPos3 + dl3;
       prevFlag = 1;
       j3_upstate = digitalRead(j3_up);
+      Serial.print("j3 : ");
       Serial.println(curPos3);
     }
   }
@@ -84,7 +85,7 @@ void checkBtn() {
     while (j3_downstate == HIGH) {
       digitalWrite(PUL3_PIN, HIGH);
       digitalWrite(PUL3_PIN, LOW);
-      delay(10);
+      delay(5);
       curPos3 = curPos3 - dl3;
       prevFlag = 1;
       j3_downstate = digitalRead(j3_down);
@@ -126,8 +127,13 @@ void checkBtn() {
     MaxSpeed[index] = curSpeed;
     FinSpeed[index] = curFinalSpeed;
     index++;                        // Increase the array index
-    Serial.print("r : ");
+    Serial.print("r1 : ");
+    Serial.println(curPos1);
     Serial.println(Joint1[index - 1]);
+    Serial.print("r2 : ");
+    Serial.println(curPos2);
+    Serial.println(Joint2[index - 1]);
+
     prevFlag = 0;
   }
 
@@ -136,17 +142,62 @@ void checkBtn() {
     float Jinitial[6] = {curPos1, curPos2, curPos3, curPos4, curPos5, curPos6};
     float Jfinal[6] = {Joint1[0], Joint2[0], Joint3[0], Joint4[0], Joint5[0], Joint6[0]};
     goStrightLine(Jinitial, Jfinal, MaxSpeed[0], 0.75e-10, 0.0, 0.0);
-    Serial.print("CursPos : ");
+    Serial.print("joint-1 : ");
     Serial.println(curPos1);
     for (int i = 0; i <= index - 2; i++) {  // Run through all steps(index)
       float Jinitial[6] = {Joint1[i], Joint2[i], Joint3[i], Joint4[i], Joint5[i], Joint6[i]};
       float Jfinal[6] = {Joint1[i + 1], Joint2[i + 1], Joint3[i + 1], Joint4[i + 1], Joint5[i + 1], Joint6[i + 1]};
       goStrightLine(Jinitial, Jfinal, MaxSpeed[i + 1], 0.75e-10, InSpeed[i + 1], FinSpeed[i + 1]);
-      Serial.print("CursPos : ");
+      Serial.print("joint-1 : ");
       Serial.println(curPos1);
     }
-    Serial.println("p");
-    Serial.println(index);
+    delay(2000);
+    //test
+//    float Jinitial2[6] = {curPos1, curPos2, curPos3, curPos4, curPos5, curPos6};
+//    float Jfinal2[6] = {0, 0, 0, 0, 0, 0};
+//    goStrightLine(Jinitial2, Jfinal2, MaxSpeed[0], 0.3e-10, 0.0, 0.0);
 
+    //end test
+
+    if (curPos1 > 0) {
+      digitalWrite(DIR1_PIN, LOW);
+
+      while (digitalRead(JOINT1HOME) != HIGH) {
+        digitalWrite(PUL1_PIN, HIGH);
+        digitalWrite(PUL1_PIN, LOW);
+        delay(10);
+        curPos1 = curPos1 - dl1;
+      }
+      Serial.print("Joint-1 : ");
+      Serial.println(curPos1);
+      curPos1 = 0.0;
+    }
+//    if (curPos2 > 0) {
+//      digitalWrite(DIR2_PIN, LOW);
+//
+//      while (digitalRead(JOINT2HOME) != HIGH) {
+//        digitalWrite(PUL2_PIN, HIGH);
+//        digitalWrite(PUL2_PIN, LOW);
+//        delay(10);
+//        curPos2 = curPos2 - dl2;
+//      }
+//      Serial.print("Joint-2 : ");
+//      Serial.println(curPos2);
+//      curPos2 = 0.0;
+//    }
+    if (curPos3 < 0) {
+      digitalWrite(DIR3_PIN, LOW);
+
+      while (digitalRead(JOINT3HOME) != HIGH) {
+        digitalWrite(PUL3_PIN, HIGH);
+        digitalWrite(PUL3_PIN, LOW);
+        delay(2);
+        curPos3 = curPos3 - dl3;
+      }
+      Serial.print("Joint-3 : ");
+      Serial.println(curPos3);
+      curPos3 = 0.0;
+    }
   }
+
 }
